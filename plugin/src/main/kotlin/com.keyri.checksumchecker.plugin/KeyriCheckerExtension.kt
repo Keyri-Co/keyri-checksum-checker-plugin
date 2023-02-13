@@ -1,11 +1,11 @@
 package com.keyri.checksumchecker.plugin
 
 class KeyriCheckerExtension {
-    var appKey: String? = null
-    var flavour: String? = null
-    var isDebug: Boolean? = null
-    var artifactType: String? = null
-    var fullPath: String? = null
+    var apkRelativePath: String? = null
+    internal var appKey: String? = null
 
     // TODO Add more options: tag, version, custom?
+    fun setAppKey(appKey: String) {
+        this.appKey = appKey
+    }
 }
