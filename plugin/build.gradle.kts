@@ -1,10 +1,8 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     `java-gradle-plugin`
     `kotlin-dsl`
     `maven-publish`
-    kotlin("jvm") version "1.5.31"
+    kotlin("jvm") version "1.8.10"
     id("com.gradle.plugin-publish") version "1.1.0"
 }
 
@@ -18,13 +16,10 @@ dependencies {
     implementation("com.android.tools.build:gradle:7.4.0")
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+kotlin {
+    jvmToolchain {
+        version = JavaVersion.VERSION_11
+    }
 }
 
 group = "com.keyri"
