@@ -12,6 +12,13 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
+      - name: Set up Java
+        uses: actions/setup-java@v3
+
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+
       - name: Publish plugin
         run: ./gradlew publishPlugins -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }} -Pgradle.publish.secret=${{ github.event.release.tag_name }}
         env:
