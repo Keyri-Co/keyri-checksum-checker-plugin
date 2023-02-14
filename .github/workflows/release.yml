@@ -19,6 +19,9 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
 
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
       - name: Publish plugin
         run: ./gradlew publishPlugins -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }} -Pgradle.publish.secret=${{ github.event.release.tag_name }}
         env:
