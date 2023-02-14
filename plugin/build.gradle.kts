@@ -28,14 +28,15 @@ tasks.withType(JavaCompile::class.java).configureEach {
 }
 
 group = "com.keyri"
-version = "0.0.1"
+version = System.getenv("GRADLE_PUBLISH_VERSION")
 
 gradlePlugin {
     plugins {
         create("KeyriChecksumCheckerPlugin") {
             id = "com.keyri.checksumchecker.plugin"
             displayName = "Keyri Checksum Checker Plugin"
-            displayName = "Gradle plugin for Android project to get and upload APK files checksums on Keyri. This improves your app code tampering protection."
+            displayName =
+                "Gradle plugin for Android project to get and upload APK files checksums on Keyri. This should increase code tampering protection."
             implementationClass = "com.keyri.checksumchecker.plugin.KeyriChecksumCheckerPlugin"
         }
     }
