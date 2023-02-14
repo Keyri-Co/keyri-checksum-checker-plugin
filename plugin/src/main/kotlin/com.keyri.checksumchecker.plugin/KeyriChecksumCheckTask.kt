@@ -10,6 +10,7 @@ import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
+import java.util.*
 
 abstract class KeyriChecksumCheckTask : DefaultTask() {
 
@@ -41,17 +42,34 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
         val result = JsonObject()
         val checksums = JsonArray()
 
-        // TODO Use META-INF/MANIFEST.MF to get checksums
-
         try {
             val apkFiles = project.zipTree(apkPath).files
 
-            apkFiles.firstOrNull { it.name == "MANIFEST.MF" }?.readLines()?.forEach { // TODO as sequence?
-                // TODO Fetch checksums here
+            var fileName = ""
+            var fileDigest = ""
+
+            apkFiles.firstOrNull { it.name == "MANIFEST.MF" }?.readLines()?.asSequence()?.forEach { line ->
+                if (line.contains("Name:")) {
+                    fileName = line.removePrefix("Name: ")
+                }
+
+                if (line.contains("SHA-256-Digest:")) {
+                    fileDigest = line.removePrefix("SHA-256-Digest: ")
+                }
+
+                if (fileName.isNotEmpty() && fileDigest.isNotEmpty()) {
+                    val apkFileEntity = JsonObject()
+
+                    apkFileEntity.addProperty(fileName, fileDigest)
+                    checksums.add(apkFileEntity)
+
+                    fileName = ""
+                    fileDigest = ""
+                }
             } ?: apkFiles.forEach { apkFile ->
                 val apkFileEntity = JsonObject()
 
-                apkFileEntity.addProperty(apkFile.name, apkFile.digestAndString())
+                apkFileEntity.addProperty(apkFile.name, apkFile.digestAndStringBase64())
                 checksums.add(apkFileEntity)
             }
 
@@ -96,9 +114,9 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
         }
     }
 
-    private fun File.digestAndString(): String {
+    private fun File.digestAndStringBase64(): String {
         val buffer = ByteArray(BUFFER_LENGTH)
-        val digest = MessageDigest.getInstance("SHA-1")
+        val digest = MessageDigest.getInstance("SHA-256")
         var bytesRead: Int
         val inputStream: java.io.InputStream = this.inputStream()
 
@@ -106,11 +124,10 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
             digest.update(buffer, 0, bytesRead)
         }
 
-        return digest.digest().encodeHex()
+        return digest.digest().toStringBase64()
     }
 
-    private fun ByteArray.encodeHex(): String =
-        joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+    private fun ByteArray.toStringBase64() = String(Base64.getEncoder().encode(this))
 
     companion object {
         private const val BUFFER_LENGTH = 1024 * 4

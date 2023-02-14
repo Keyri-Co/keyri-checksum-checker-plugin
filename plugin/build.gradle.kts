@@ -1,7 +1,6 @@
 plugins {
     `java-gradle-plugin`
     `kotlin-dsl`
-    `maven-publish`
     kotlin("jvm") version "1.8.10"
     id("com.gradle.plugin-publish") version "1.1.0"
 }
@@ -30,7 +29,7 @@ gradlePlugin {
         create("KeyriChecksumCheckerPlugin") {
             id = "com.keyri.checksumchecker.plugin"
             displayName = "Keyri Checksum Checker Plugin"
-            displayName =
+            description =
                 "Gradle plugin for Android project to get and upload APK files checksums on Keyri. This should increase code tampering protection."
             implementationClass = "com.keyri.checksumchecker.plugin.KeyriChecksumCheckerPlugin"
         }
