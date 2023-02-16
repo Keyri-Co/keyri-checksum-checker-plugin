@@ -1,11 +1,11 @@
 package com.keyri.checksumchecker.plugin
 
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
-import org.gradle.internal.impldep.com.google.gson.JsonArray
-import org.gradle.internal.impldep.com.google.gson.JsonObject
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL

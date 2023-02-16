@@ -1,6 +1,6 @@
 package com.keyri.checksumchecker.plugin
 
-class KeyriCheckerExtension {
+abstract class KeyriCheckerExtension {
     var apkFullPath: String? = null
     var apkID: String? = null
     internal var appKey: String? = null

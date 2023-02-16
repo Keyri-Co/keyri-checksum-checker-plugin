@@ -1,7 +1,6 @@
 plugins {
     `java-gradle-plugin`
     `kotlin-dsl`
-    kotlin("jvm") version "1.8.10"
     id("com.gradle.plugin-publish") version "1.1.0"
 }
 
@@ -13,6 +12,7 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib"))
     implementation("com.android.tools.build:gradle:7.4.0")
+    implementation("com.google.code.gson:gson:2.10")
 }
 
 kotlin {

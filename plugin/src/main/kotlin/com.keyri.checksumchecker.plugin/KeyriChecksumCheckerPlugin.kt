@@ -7,6 +7,6 @@ class KeyriChecksumCheckerPlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
         target.extensions.create("keyriChecker", KeyriCheckerExtension::class.java)
-        target.tasks.create("keyriChecksumCheck", KeyriChecksumCheckTask::class.java)
+        target.tasks.register("keyriChecksumCheck", KeyriChecksumCheckTask::class.java)
     }
 }
