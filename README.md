@@ -10,9 +10,7 @@
 
 This repository contains the open source code for Keyri Checksum Checker Plugin.
 
-![Lint](https://github.com/Keyri-Co/keyri-checksum-checker-plugin/workflows/Lint/badge.svg)
-![Release](https://github.com/Keyri-Co/keyri-checksum-checker-plugin/workflows/Release/badge.svg)
-
+[![Lint](https://github.com/Keyri-Co/keyri-checksum-checker-plugin/actions/workflows/lint.yml/badge.svg)](https://github.com/Keyri-Co/keyri-checksum-checker-plugin/actions/workflows/lint.yml)
 [![GitHub release](https://img.shields.io/github/release/Keyri-Co/keyri-checksum-checker-plugin.svg?maxAge=10)](https://github.com/Keyri-Co/keyri-checksum-checker-plugin/releases)
 
 ## Contents
@@ -29,7 +27,7 @@ Using the plugins DSL:
 
 ```kotlin
 plugins {
-    id("com.keyri.checksumchecker.plugin") version "0.0.2"
+    id("com.keyri.checksumchecker.plugin") version "$latestPluginVersion"
 }
 ```
 
@@ -43,7 +41,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("com.keyri:plugin:0.0.2")
+        classpath("com.keyri:plugin:$latestPluginVersion")
     }
 }
 
@@ -52,4 +50,4 @@ apply(plugin = "com.keyri.checksumchecker.plugin")
 
 ### **Usage**
 
-In progress
+[//]: # (TODO: Add implementation)
