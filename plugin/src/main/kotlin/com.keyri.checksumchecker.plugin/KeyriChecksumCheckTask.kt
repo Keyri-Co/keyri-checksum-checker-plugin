@@ -2,15 +2,16 @@ package com.keyri.checksumchecker.plugin
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.TaskAction
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
 import java.util.*
+import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.TaskAction
+
 
 abstract class KeyriChecksumCheckTask : DefaultTask() {
 
@@ -34,7 +35,7 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
         appKey = keyriCheckerExt.appKey ?: throw GradleException("You should provide valid App Key")
         apkID = keyriCheckerExt.apkID ?: throw GradleException("You should provide valid APK ID")
 
-        return keyriCheckerExt.apkFullPath?.takeIf { it.isNotEmpty() }
+        return keyriCheckerExt.apkFullPath?.takeIf { File(it).exists() }
             ?: throw GradleException("You should provide valid APK path")
     }
 
@@ -45,28 +46,31 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
         try {
             val apkFiles = project.zipTree(apkPath).files
 
+            // TODO: Single hash?
+
             var fileName = ""
             var fileDigest = ""
 
-            apkFiles.firstOrNull { it.name == "MANIFEST.MF" }?.readLines()?.asSequence()?.forEach { line ->
-                if (line.contains("Name:")) {
-                    fileName = line.removePrefix("Name: ")
-                }
+            apkFiles.firstOrNull { it.name == "MANIFEST.MF" }?.readLines()?.asSequence()
+                ?.forEach { line ->
+                    if (line.contains("Name:")) {
+                        fileName = line.removePrefix("Name: ")
+                    }
 
-                if (line.contains("SHA-256-Digest:")) {
-                    fileDigest = line.removePrefix("SHA-256-Digest: ")
-                }
+                    if (line.contains("SHA-256-Digest:")) {
+                        fileDigest = line.removePrefix("SHA-256-Digest: ")
+                    }
 
-                if (fileName.isNotEmpty() && fileDigest.isNotEmpty()) {
-                    val apkFileEntity = JsonObject()
+                    if (fileName.isNotEmpty() && fileDigest.isNotEmpty()) {
+                        val apkFileEntity = JsonObject()
 
-                    apkFileEntity.addProperty(fileName, fileDigest)
-                    checksums.add(apkFileEntity)
+                        apkFileEntity.addProperty(fileName, fileDigest)
+                        checksums.add(apkFileEntity)
 
-                    fileName = ""
-                    fileDigest = ""
-                }
-            } ?: apkFiles.forEach { apkFile ->
+                        fileName = ""
+                        fileDigest = ""
+                    }
+                } ?: apkFiles.forEach { apkFile ->
                 val apkFileEntity = JsonObject()
 
                 apkFileEntity.addProperty(apkFile.name, apkFile.digestAndStringBase64())
@@ -87,6 +91,7 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
         }
     }
 
+    // TODO: Send payload to Zain
     private fun uploadChecksums(payload: JsonObject) {
         try {
             // TODO Add url
@@ -96,7 +101,11 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
                 doOutput = true
             }
 
-            connection?.outputStream?.write(payload.toString().encodeToByteArray())
+            connection?.outputStream?.use { outputStream ->
+                val input = payload.toString().toByteArray(Charsets.UTF_8)
+
+                outputStream.write(input, 0, input.size)
+            }
 
             if (connection?.responseCode == 200) {
                 val result = connection.inputStream?.readAllBytes()?.decodeToString()

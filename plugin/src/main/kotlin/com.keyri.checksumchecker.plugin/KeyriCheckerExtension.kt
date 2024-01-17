@@ -1,11 +1,10 @@
 package com.keyri.checksumchecker.plugin
 
 open class KeyriCheckerExtension {
+    // TODO: Merge with bundle path
     var apkFullPath: String? = null
+    // TODO: Replace with build version
     var apkID: String? = null
-    internal var appKey: String? = null
-
-    fun setAppKey(appKey: String) {
-        this.appKey = appKey
-    }
+    var appKey: String? = null
+        internal set
 }
