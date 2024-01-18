@@ -5,8 +5,8 @@ import org.gradle.api.Project
 
 class KeyriChecksumCheckerPlugin : Plugin<Project> {
 
-    override fun apply(target: Project) {
-        target.extensions.create("keyriChecker", KeyriCheckerExtension::class.java)
-        target.tasks.register("keyriChecksumCheck", KeyriChecksumCheckTask::class.java)
+    override fun apply(project: Project) {
+        project.extensions.create("keyriChecker", KeyriCheckerExtension::class.java)
+        project.tasks.register("keyriChecksumCheck", KeyriChecksumCheckTask::class.java)
     }
 }
