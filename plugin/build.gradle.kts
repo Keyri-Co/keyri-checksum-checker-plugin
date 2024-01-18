@@ -16,7 +16,7 @@ dependencies {
 
 kotlin {
     jvmToolchain {
-        version = JavaVersion.VERSION_17
+        version = JavaVersion.VERSION_11
     }
 }
 
