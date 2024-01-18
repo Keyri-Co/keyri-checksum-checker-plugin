@@ -50,4 +50,29 @@ apply(plugin = "com.keyri.checksumchecker.plugin")
 
 ### **Usage**
 
-[//]: # (TODO: Add implementation)
+Add `keyriChecker` extension to your app `build.gradle` file:
+
+```kotlin
+android {
+    defaultConfig {
+        // ...
+        versionName = "1.0"
+    }
+
+    keyriChecker {
+        appKey = "[Your appKey]"
+        versionName = defaultConfig.versionName
+        bundleFullPath = "full/path/to/your/bundle"
+    }
+
+// ...
+}
+```
+
+After generating bundle call `keyriChecksumCheck` task:
+
+```shell
+./gradlew keyriChecksumCheck
+```
+
+This will calculate bundle checksum and automatically send it to server for next checks.

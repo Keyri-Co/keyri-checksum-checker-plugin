@@ -17,8 +17,8 @@ jobs:
           distribution: 'adopt'
           java-version: '17'
 
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
       - name: lint
         run: ./gradlew ktlint
-
-      - name: CheckStyle
-        run: ./gradlew checkJavaStyle

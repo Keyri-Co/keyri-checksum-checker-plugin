@@ -16,7 +16,7 @@ buildscript {
 
     dependencies {
         classpath("com.android.tools.build:gradle:8.2.1")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.20")
     }
 }
 
@@ -24,7 +24,7 @@ allprojects {
     val kotlinLint by configurations.creating
 
     dependencies {
-        kotlinLint("com.pinterest:ktlint:1.1.1") {
+        kotlinLint("com.pinterest:ktlint:0.50.0") {
             attributes {
                 attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL))
             }

@@ -2,16 +2,15 @@ package com.keyri.checksumchecker.plugin
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.TaskAction
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
 import java.util.*
-import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.TaskAction
-
 
 abstract class KeyriChecksumCheckTask : DefaultTask() {
 
@@ -19,39 +18,38 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
     var appKey: String? = null
 
     @Internal
-    var apkID: String? = null
+    var versionName: String? = null
 
     @TaskAction
     fun run() {
-        val apkPath = getApkPath()
-        val payload = getAPKChecksumsPayload(apkPath)
+        val bundlePath = getBundlePath()
+        val payload = getBundleChecksumsPayload(bundlePath)
 
         uploadChecksums(payload)
     }
 
-    private fun getApkPath(): String {
+    private fun getBundlePath(): String {
         val keyriCheckerExt = project.extensions.getByType(KeyriCheckerExtension::class.java)
 
-        appKey = keyriCheckerExt.appKey ?: throw GradleException("You should provide valid App Key")
-        apkID = keyriCheckerExt.apkID ?: throw GradleException("You should provide valid APK ID")
+        appKey = keyriCheckerExt.appKey ?: throw GradleException("You should provide valid appKey")
+        versionName = keyriCheckerExt.versionName
+            ?: throw GradleException("You should provide valid versionName")
 
-        return keyriCheckerExt.apkFullPath?.takeIf { File(it).exists() }
-            ?: throw GradleException("You should provide valid APK path")
+        return keyriCheckerExt.bundleFullPath?.takeIf { File(it).exists() }
+            ?: throw GradleException("You should provide valid App Bundle path")
     }
 
-    private fun getAPKChecksumsPayload(apkPath: String): JsonObject {
+    private fun getBundleChecksumsPayload(bundlePath: String): JsonObject {
         val result = JsonObject()
         val checksums = JsonArray()
 
         try {
-            val apkFiles = project.zipTree(apkPath).files
-
-            // TODO: Single hash?
+            val bundleFiles = project.zipTree(bundlePath).files
 
             var fileName = ""
             var fileDigest = ""
 
-            apkFiles.firstOrNull { it.name == "MANIFEST.MF" }?.readLines()?.asSequence()
+            bundleFiles.firstOrNull { it.name == "MANIFEST.MF" }?.readLines()?.asSequence()
                 ?.forEach { line ->
                     if (line.contains("Name:")) {
                         fileName = line.removePrefix("Name: ")
@@ -62,63 +60,61 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
                     }
 
                     if (fileName.isNotEmpty() && fileDigest.isNotEmpty()) {
-                        val apkFileEntity = JsonObject()
+                        val bundleFileEntity = JsonObject()
 
-                        apkFileEntity.addProperty(fileName, fileDigest)
-                        checksums.add(apkFileEntity)
+                        bundleFileEntity.addProperty(fileName, fileDigest)
+                        checksums.add(bundleFileEntity)
 
                         fileName = ""
                         fileDigest = ""
                     }
-                } ?: apkFiles.forEach { apkFile ->
-                val apkFileEntity = JsonObject()
+                } ?: bundleFiles.forEach { bundleFile ->
+                val bundleFileEntity = JsonObject()
 
-                apkFileEntity.addProperty(apkFile.name, apkFile.digestAndStringBase64())
-                checksums.add(apkFileEntity)
+                bundleFileEntity.addProperty(bundleFile.name, bundleFile.digestAndStringBase64())
+                checksums.add(bundleFileEntity)
             }
 
-            println("Get ${checksums.size()} APK Checksums")
+            println("Get ${checksums.size()} Bundle Checksums")
 
             result.addProperty("osType", "Android")
-            result.addProperty("apkPath", apkPath)
-            result.addProperty("apkID", apkID)
+            result.addProperty("bundlePath", bundlePath)
+            result.addProperty("versionName", versionName)
 
             result.add("checksums", checksums)
 
             return result
         } catch (e: Exception) {
-            throw GradleException(e.message ?: "Failed to read APK files checksums")
+            throw GradleException(e.message ?: "Failed to read App Bundle files checksums")
         }
     }
 
-    // TODO: Send payload to Zain
     private fun uploadChecksums(payload: JsonObject) {
         try {
             // TODO Add url
             val connection = (URL("").openConnection() as? HttpURLConnection)?.apply {
                 requestMethod = "POST"
                 setRequestProperty("Content-Type", "application/json; charset=UTF-8")
+                setRequestProperty("appKey", appKey)
                 doOutput = true
             }
 
             connection?.outputStream?.use { outputStream ->
-                val input = payload.toString().toByteArray(Charsets.UTF_8)
-
-                outputStream.write(input, 0, input.size)
+                outputStream.write(payload.toString().toByteArray(Charsets.UTF_8))
             }
 
             if (connection?.responseCode == 200) {
                 val result = connection.inputStream?.readAllBytes()?.decodeToString()
 
-                println("APK Checksums uploaded: $result")
+                println("App Bundle Checksums uploaded: $result")
             } else {
-                throw GradleException("Failed to send APK checksums request with message: " + connection?.responseMessage)
+                throw GradleException("Failed to send App Bundle checksums request with message: " + connection?.responseMessage)
             }
         } catch (e: Exception) {
             if (e is GradleException) {
                 throw e
             } else {
-                throw GradleException("Failed to send APK checksums request with message: " + e.message)
+                throw GradleException("Failed to send App Bundle checksums request with message: " + e.message)
             }
         }
     }

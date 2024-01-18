@@ -24,19 +24,18 @@ group = "com.keyri"
 version = System.getenv("GRADLE_PUBLISH_VERSION")
 
 gradlePlugin {
+    website.set("https://github.com/Keyri-Co/keyri-checksum-checker-plugin")
+    vcsUrl.set("https://github.com/Keyri-Co/keyri-checksum-checker-plugin.git")
+
     plugins {
         create("KeyriChecksumCheckerPlugin") {
             id = "com.keyri.checksumchecker.plugin"
             displayName = "Keyri Checksum Checker Plugin"
             description =
-                "Gradle plugin for Android project to get and upload APK files checksums on Keyri. This should increase code tampering protection."
+                "Gradle plugin for Android project to get and upload App Bundle files checksums on Keyri. This should increase code tampering protection."
             implementationClass = "com.keyri.checksumchecker.plugin.KeyriChecksumCheckerPlugin"
+
+            tags.set(listOf("Android", "Bundle", "Kotlin", "Security"))
         }
     }
-}
-
-pluginBundle {
-    website = "https://github.com/Keyri-Co/keyri-checksum-checker-plugin"
-    vcsUrl = "https://github.com/Keyri-Co/keyri-checksum-checker-plugin.git"
-    tags = listOf("Android", "APK", "Kotlin", "Security")
 }
