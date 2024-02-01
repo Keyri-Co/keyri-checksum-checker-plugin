@@ -91,8 +91,7 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
 
     private fun uploadChecksums(payload: JsonObject) {
         try {
-            // TODO Change url
-            val connection = (URL("https://plugin-test.free.beeceptor.com").openConnection() as? HttpURLConnection)?.apply {
+            val connection = (URL("https://td.api.keyri.com/register").openConnection() as? HttpURLConnection)?.apply {
                 requestMethod = "POST"
                 setRequestProperty("Content-Type", "application/json; charset=UTF-8")
                 setRequestProperty("appKey", appKey)
