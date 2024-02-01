@@ -75,7 +75,7 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
                 checksums.add(bundleFileEntity)
             }
 
-            println("Get ${checksums.size()} Bundle Checksums")
+            project.logger.info("Get ${checksums.size()} Bundle Checksums")
 
             result.addProperty("osType", "Android")
             result.addProperty("bundlePath", bundlePath)
@@ -91,8 +91,7 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
 
     private fun uploadChecksums(payload: JsonObject) {
         try {
-            // TODO Add url
-            val connection = (URL("").openConnection() as? HttpURLConnection)?.apply {
+            val connection = (URL("https://td.api.keyri.com/register").openConnection() as? HttpURLConnection)?.apply {
                 requestMethod = "POST"
                 setRequestProperty("Content-Type", "application/json; charset=UTF-8")
                 setRequestProperty("appKey", appKey)
@@ -106,7 +105,7 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
             if (connection?.responseCode == 200) {
                 val result = connection.inputStream?.readAllBytes()?.decodeToString()
 
-                println("App Bundle Checksums uploaded: $result")
+                project.logger.info("App Bundle Checksums uploaded: $result")
             } else {
                 throw GradleException("Failed to send App Bundle checksums request with message: " + connection?.responseMessage)
             }
