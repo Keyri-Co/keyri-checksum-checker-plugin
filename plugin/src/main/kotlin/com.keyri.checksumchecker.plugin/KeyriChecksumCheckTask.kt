@@ -90,31 +90,24 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
     }
 
     private fun uploadChecksums(payload: JsonObject) {
-        try {
-            val connection = (URL("https://td.api.keyri.com/register").openConnection() as? HttpURLConnection)?.apply {
+        val connection =
+            (URL("https://td.api.keyri.com/register").openConnection() as? HttpURLConnection)?.apply {
                 requestMethod = "POST"
                 setRequestProperty("Content-Type", "application/json; charset=UTF-8")
-                setRequestProperty("appKey", appKey)
+                setRequestProperty("x-app-key", appKey)
                 doOutput = true
             }
 
-            connection?.outputStream?.use { outputStream ->
-                outputStream.write(payload.toString().toByteArray(Charsets.UTF_8))
-            }
+        connection?.outputStream?.use { outputStream ->
+            outputStream.write(payload.toString().toByteArray(Charsets.UTF_8))
+        }
 
-            if (connection?.responseCode == 200) {
-                val result = connection.inputStream?.readAllBytes()?.decodeToString()
+        if (connection?.responseCode == 200) {
+            val result = connection.inputStream?.readAllBytes()?.decodeToString()
 
-                project.logger.info("App Bundle Checksums uploaded: $result")
-            } else {
-                throw GradleException("Failed to send App Bundle checksums request with message: " + connection?.responseMessage)
-            }
-        } catch (e: Exception) {
-            if (e is GradleException) {
-                throw e
-            } else {
-                throw GradleException("Failed to send App Bundle checksums request with message: " + e.message)
-            }
+            project.logger.info("App Bundle Checksums uploaded: $result")
+        } else {
+            throw GradleException("Failed to send App Bundle checksums request (${connection?.responseCode}): " + connection?.responseMessage)
         }
     }
 
