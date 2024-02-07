@@ -35,8 +35,11 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
         versionName = keyriCheckerExt.versionName
             ?: throw GradleException("You should provide valid versionName")
 
-        return keyriCheckerExt.bundleFullPath?.takeIf { File(it).exists() }
-            ?: throw GradleException("You should provide valid App Bundle path")
+        return keyriCheckerExt.bundleFullPath?.takeIf { path ->
+            val file = File(path)
+
+            file.exists() && file.extension == ".aab"
+        } ?: throw GradleException("You should provide valid App Bundle path")
     }
 
     private fun getBundleChecksumsPayload(bundlePath: String): JsonObject {
@@ -44,31 +47,7 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
         val checksums = JsonArray()
 
         try {
-            val bundleFiles = project.zipTree(bundlePath).files
-
-            var fileName = ""
-            var fileDigest = ""
-
-            bundleFiles.firstOrNull { it.name == "MANIFEST.MF" }?.readLines()?.asSequence()
-                ?.forEach { line ->
-                    if (line.contains("Name:")) {
-                        fileName = line.removePrefix("Name: ")
-                    }
-
-                    if (line.contains("SHA-256-Digest:")) {
-                        fileDigest = line.removePrefix("SHA-256-Digest: ")
-                    }
-
-                    if (fileName.isNotEmpty() && fileDigest.isNotEmpty()) {
-                        val bundleFileEntity = JsonObject()
-
-                        bundleFileEntity.addProperty(fileName, fileDigest)
-                        checksums.add(bundleFileEntity)
-
-                        fileName = ""
-                        fileDigest = ""
-                    }
-                } ?: bundleFiles.forEach { bundleFile ->
+            project.zipTree(bundlePath).files.forEach { bundleFile ->
                 val bundleFileEntity = JsonObject()
 
                 bundleFileEntity.addProperty(bundleFile.name, bundleFile.digestAndStringBase64())
@@ -102,8 +81,8 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
             outputStream.write(payload.toString().toByteArray(Charsets.UTF_8))
         }
 
-        if (connection?.responseCode == 200) {
-            val result = connection.inputStream?.readAllBytes()?.decodeToString()
+        if (connection?.responseCode in 200 until 300) {
+            val result = connection?.inputStream?.readAllBytes()?.decodeToString()
 
             project.logger.info("App Bundle Checksums uploaded: $result")
         } else {
