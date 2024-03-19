@@ -20,6 +20,12 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
     @Internal
     var versionName: String? = null
 
+    @Internal
+    var keyriVersion: String? = null
+
+    @Internal
+    var packageName: String? = null
+
     @TaskAction
     fun run() {
         val bundlePath = getBundlePath()
@@ -35,11 +41,17 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
         versionName = keyriCheckerExt.versionName
             ?: throw GradleException("You should provide valid versionName")
 
-        return keyriCheckerExt.bundleFullPath?.takeIf { path ->
+        keyriVersion = keyriCheckerExt.keyriVersion
+            ?: throw GradleException("You should provide valid keyriVersion")
+
+        packageName = keyriCheckerExt.packageName
+            ?: throw GradleException("You should provide valid packageName")
+
+        return keyriCheckerExt.signedApkFullPath?.takeIf { path ->
             val file = File(path)
 
             file.exists() && file.extension == ".aab"
-        } ?: throw GradleException("You should provide valid App Bundle path")
+        } ?: throw GradleException("You should provide valid Signed APK full path")
     }
 
     private fun getBundleChecksumsPayload(bundlePath: String): JsonObject {
@@ -54,11 +66,12 @@ abstract class KeyriChecksumCheckTask : DefaultTask() {
                 checksums.add(bundleFileEntity)
             }
 
-            project.logger.info("Get ${checksums.size()} Bundle Checksums")
+            project.logger.info("Get ${checksums.size()} Signed APK Checksums")
 
             result.addProperty("osType", "Android")
-            result.addProperty("bundlePath", bundlePath)
+            result.addProperty("packageName", packageName)
             result.addProperty("versionName", versionName)
+            result.addProperty("keyriVersion", keyriVersion)
 
             result.add("checksums", checksums)
 
